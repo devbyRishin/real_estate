@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Obsidian Penthouse — Aura Estates</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.76/build/spline-viewer.js"></script>
+
+  <style>
+    :root {
+      --gold:    #C9A84C;
+      --gold-lt: #E2C77A;
+      --bg:      #09090b;
+      --surface: #111113;
+      --text:    #cbd5e1;
+      --serif:   'Playfair Display', Georgia, serif;
+      --sans:    'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); overflow-x: hidden; }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: .5;
+    }
+
+    .font-serif { font-family: var(--serif); }
+    .text-gold { color: var(--gold); }
+
+    .glass {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    #navbar { transition: background .4s; }
+    #navbar.scrolled {
+      background: rgba(9,9,11,0.9);
+      box-shadow: 0 1px 0 rgba(201,168,76,.18);
+      backdrop-filter: blur(20px);
+    }
+
+    .gold-line { display: inline-block; width: 56px; height: 1px; background: var(--gold); vertical-align: middle; margin-right: 14px; }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 100%);
+      color: #09090b; font-family: var(--sans); font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase; font-size: .78rem;
+      transition: opacity .3s, transform .3s;
+    }
+    .btn-gold:hover { opacity: .88; transform: translateY(-1px); }
+
+    .btn-outline {
+      border: 1px solid rgba(201,168,76,.55); color: var(--gold);
+      font-family: var(--sans); font-weight: 500;
+      letter-spacing: .08em; text-transform: uppercase; font-size: .78rem;
+      transition: background .3s;
+    }
+    .btn-outline:hover { background: rgba(201,168,76,.1); }
+
+    /* ── 3D Tour Section ── */
+    #virtual-tour {
+      position: relative;
+      height: 70vh;
+      min-height: 460px;
+      overflow: hidden;
+    }
+    #virtual-tour spline-viewer {
+      width: 100%; height: 100%;
+    }
+    .tour-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom,
+        rgba(9,9,11,.6) 0%,
+        transparent 30%,
+        transparent 70%,
+        rgba(9,9,11,.8) 100%);
+      pointer-events: none;
+    }
+    .tour-label {
+      position: absolute; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--sans);
+      font-size: .72rem;
+      color: rgba(201,168,76,.7);
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      display: flex; align-items: center; gap-8px;
+      pointer-events: none;
+    }
+
+    /* ── Image Gallery ── */
+    .gallery-thumb {
+      overflow: hidden; cursor: pointer;
+      transition: transform .3s, box-shadow .3s;
+    }
+    .gallery-thumb:hover { transform: scale(1.02); box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+    .gallery-thumb img { transition: transform .5s; }
+    .gallery-thumb:hover img { transform: scale(1.06); }
+
+    /* ── Spec Table ── */
+    .spec-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .spec-row:last-child { border-bottom: none; }
+
+    /* ── Amenity Badge ── */
+    .amenity {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      padding: 12px 16px;
+      border-radius: 2px;
+      transition: border-color .3s;
+    }
+    .amenity:hover { border-color: rgba(201,168,76,.3); }
+
+    /* ── Sticky Sidebar ── */
+    #sidebar {
+      position: sticky;
+      top: 88px;
+    }
+
+    /* ── Tab System ── */
+    .tab-btn { transition: color .2s, border-color .2s; }
+    .tab-btn.active {
+      color: var(--gold);
+      border-bottom: 2px solid var(--gold);
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Reveal ── */
+    .reveal { opacity:0; transform:translateY(24px); transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1); }
+    .reveal.visible { opacity:1; transform:none; }
+
+    #mobile-menu { display:none; }
+    #mobile-menu.open { display:block; }
+
+    /* ── Form inputs ── */
+    .form-input {
+      width: 100%;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: .85rem;
+      padding: 12px 16px;
+      border-radius: 2px;
+      outline: none;
+      transition: border-color .3s;
+    }
+    .form-input:focus { border-color: var(--gold); }
+    .form-input::placeholder { color: #475569; }
+    label { font-family: var(--sans); font-size: .72rem; letter-spacing: .15em; text-transform: uppercase; color: #64748b; display: block; margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     NAVIGATION
+════════════════════════════════════════════ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-between">
+  <a href="index.html" class="flex items-center gap-3">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <polygon points="16,2 30,28 2,28" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+      <polygon points="16,8 26,26 6,26" fill="rgba(201,168,76,0.12)"/>
+    </svg>
+    <span class="font-serif text-xl tracking-widest text-white" style="letter-spacing:.22em;">AURA</span>
+    <span class="text-gold font-sans text-xs tracking-widest uppercase" style="letter-spacing:.3em;">ESTATES</span>
+  </a>
+
+  <ul class="hidden md:flex gap-10 items-center font-sans text-sm tracking-widest uppercase" style="letter-spacing:.15em;">
+    <li><a href="index.html"      class="text-slate-400 hover:text-white transition-colors">Home</a></li>
+    <li><a href="properties.html" class="text-slate-400 hover:text-white transition-colors">Properties</a></li>
+    <li><a href="details.html"    class="text-gold border-b border-gold pb-0.5">Virtual Tour</a></li>
+    <li><a href="contact.html"    class="text-slate-400 hover:text-white transition-colors">Contact</a></li>
+  </ul>
+
+  <a href="contact.html" class="hidden md:inline-flex btn-gold px-6 py-2.5 rounded-sm items-center gap-2">
+    Private Consultation
+  </a>
+
+  <button class="md:hidden text-slate-300" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/>
+    </svg>
+  </button>
+</nav>
+
+<div id="mobile-menu" class="fixed top-16 left-0 right-0 z-40 glass px-8 py-6 flex flex-col gap-5 font-sans text-sm tracking-widest uppercase" style="letter-spacing:.15em;">
+  <a href="index.html"      class="text-slate-300">Home</a>
+  <a href="properties.html" class="text-slate-300">Properties</a>
+  <a href="details.html"    class="text-gold">Virtual Tour</a>
+  <a href="contact.html"    class="text-slate-300">Contact</a>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     BREADCRUMB + TITLE
+════════════════════════════════════════════ -->
+<div class="pt-28 pb-10 px-8 md:px-20 max-w-7xl mx-auto">
+  <p class="font-sans text-xs text-slate-600 mb-6" style="letter-spacing:.1em;">
+    <a href="index.html" class="hover:text-gold transition-colors">Home</a>
+    <span class="mx-2 text-slate-700">›</span>
+    <a href="properties.html" class="hover:text-gold transition-colors">Properties</a>
+    <span class="mx-2 text-slate-700">›</span>
+    <span class="text-gold">Obsidian Penthouse</span>
+  </p>
+
+  <div class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div>
+      <p class="font-sans text-xs tracking-widest uppercase mb-3" style="color:var(--gold); letter-spacing:.3em;">
+        <span class="gold-line"></span>Manhattan, New York · Penthouse
+      </p>
+      <h1 class="font-serif text-5xl md:text-6xl text-white" style="font-weight:400;">
+        Obsidian<br/><em style="color:var(--gold);">Penthouse</em>
+      </h1>
+    </div>
+    <div class="text-right">
+      <p class="font-sans text-xs text-slate-500 mb-1 tracking-widest uppercase" style="letter-spacing:.15em;">Asking Price</p>
+      <p class="font-serif text-4xl text-white" style="font-weight:400;">$48.<span class="text-gold">5M</span></p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     3D VIRTUAL TOUR
+════════════════════════════════════════════ -->
+<section id="virtual-tour" class="reveal">
+  <!-- Interactive 3D Room -->
+  <spline-viewer url="https://prod.spline.design/6Wq1Q7YGyWfS3Umc/scene.splinecode"></spline-viewer>
+
+  <div class="tour-overlay"></div>
+
+  <!-- Top-left badge -->
+  <div class="absolute top-6 left-8 glass px-5 py-2.5 rounded-sm flex items-center gap-3">
+    <div style="width:8px; height:8px; border-radius:50%; background:var(--gold); animation: pulse 2s infinite;"></div>
+    <span class="font-sans text-xs tracking-widest uppercase text-gold" style="letter-spacing:.2em;">Live 3D Virtual Tour</span>
+  </div>
+
+  <!-- Instructions -->
+  <div class="tour-label" style="gap:8px;">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0m-2 6V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0v7a8 8 0 0 0 16 0v-5a2 2 0 0 0-2-2h0a2 2 0 0 0-2 2v3"/></svg>
+    &nbsp;Drag to rotate · Scroll to zoom · Double-click to focus
+  </div>
+</section>
+
+<style>
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+</style>
+
+
+<!-- ════════════════════════════════════════════
+     MAIN CONTENT + SIDEBAR
+════════════════════════════════════════════ -->
+<div class="px-8 md:px-20 max-w-7xl mx-auto py-16 flex flex-col lg:flex-row gap-12">
+
+  <!-- ── LEFT CONTENT ── -->
+  <div class="flex-1 min-w-0">
+
+    <!-- Tab Navigation -->
+    <div style="border-bottom:1px solid rgba(255,255,255,.08);" class="flex gap-8 mb-10">
+      <button class="tab-btn active font-sans text-sm pb-4 tracking-widest uppercase" style="letter-spacing:.15em; background:none; border:none; cursor:pointer; color:var(--gold); border-bottom:2px solid var(--gold);" onclick="switchTab('overview')">Overview</button>
+      <button class="tab-btn font-sans text-sm pb-4 tracking-widest uppercase text-slate-500" style="letter-spacing:.15em; background:none; border:none; cursor:pointer; border-bottom:2px solid transparent;" onclick="switchTab('specs')">Specifications</button>
+      <button class="tab-btn font-sans text-sm pb-4 tracking-widest uppercase text-slate-500" style="letter-spacing:.15em; background:none; border:none; cursor:pointer; border-bottom:2px solid transparent;" onclick="switchTab('amenities')">Amenities</button>
+    </div>
+
+    <!-- Tab: Overview -->
+    <div id="tab-overview" class="tab-panel active reveal">
+      <p class="font-sans text-slate-400 text-base leading-relaxed mb-6" style="font-family:var(--sans);">
+        Perched atop 432 Park Avenue, the Obsidian Penthouse represents the absolute pinnacle of New York luxury living. An architectural tour de force spanning three floors and 12,400 square feet, this residence was conceived by Pritzker Prize laureate Rafael Viñoly and completed in 2022 with a total fit-out budget exceeding $12 million.
+      </p>
+      <p class="font-sans text-slate-500 text-sm leading-relaxed mb-8" style="font-family:var(--sans);">
+        Floor-to-ceiling windows frame uninterrupted 360° panoramas of Manhattan, the Hudson River, and on clear days, the horizon beyond. Hand-selected Carrara marble, custom-milled walnut millwork, and a Crestron smart-home system woven invisibly into the architecture create an atmosphere of effortless mastery.
+      </p>
+
+      <!-- Photo Gallery -->
+      <h3 class="font-serif text-2xl text-white mb-6" style="font-weight:400;">Gallery</h3>
+      <div class="grid grid-cols-3 gap-3 mb-8">
+        <div class="gallery-thumb rounded-sm overflow-hidden h-40 col-span-2">
+          <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=700&q=80" alt="Living Room" class="w-full h-full object-cover" />
+        </div>
+        <div class="gallery-thumb rounded-sm overflow-hidden h-40">
+          <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=400&q=80" alt="Master Suite" class="w-full h-full object-cover" />
+        </div>
+        <div class="gallery-thumb rounded-sm overflow-hidden h-40">
+          <img src="https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=400&q=80" alt="Kitchen" class="w-full h-full object-cover" />
+        </div>
+        <div class="gallery-thumb rounded-sm overflow-hidden h-40">
+          <img src="https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?w=400&q=80" alt="Pool Terrace" class="w-full h-full object-cover" />
+        </div>
+        <div class="gallery-thumb rounded-sm overflow-hidden h-40 relative">
+          <img src="https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?w=400&q=80" alt="More" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 flex items-center justify-center" style="background:rgba(9,9,11,.65);">
+            <span class="font-serif text-2xl text-white">+18</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Specifications -->
+    <div id="tab-specs" class="tab-panel reveal">
+      <h3 class="font-serif text-2xl text-white mb-8" style="font-weight:400;">Property <em>Specifications</em></h3>
+
+      <div class="glass rounded-sm p-8">
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500" style="font-family:var(--sans);">Total Area</span>
+          <span class="font-sans text-sm text-white font-medium" style="font-family:var(--sans);">12,400 sq ft <span class="text-slate-600 text-xs">(1,152 m²)</span></span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Bedrooms</span>
+          <span class="font-sans text-sm text-white font-medium">5 en-suite Bedrooms</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Bathrooms</span>
+          <span class="font-sans text-sm text-white font-medium">6 full + 2 powder rooms</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Floors</span>
+          <span class="font-sans text-sm text-white font-medium">3 private floors (82–84F)</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Ceiling Height</span>
+          <span class="font-sans text-sm text-white font-medium">14 ft throughout</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Parking</span>
+          <span class="font-sans text-sm text-white font-medium">4 valet-managed spaces</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Outdoor Space</span>
+          <span class="font-sans text-sm text-white font-medium">3,200 sq ft wraparound terrace</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Helipad</span>
+          <span class="font-sans text-sm text-gold font-medium">✓ Private Helipad — Roof Level</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Pool</span>
+          <span class="font-sans text-sm text-gold font-medium">✓ Heated Plunge Pool (Terrace)</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Spa</span>
+          <span class="font-sans text-sm text-gold font-medium">✓ Full Spa Suite + Sauna</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Smart Home</span>
+          <span class="font-sans text-sm text-white font-medium">Crestron Gen4 Integrated</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Year Completed</span>
+          <span class="font-sans text-sm text-white font-medium">2022</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Architect</span>
+          <span class="font-sans text-sm text-white font-medium">Rafael Viñoly Architects</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Interior Design</span>
+          <span class="font-sans text-sm text-white font-medium">Kelly Behun Studio</span>
+        </div>
+        <div class="spec-row">
+          <span class="font-sans text-sm text-slate-500">Annual Taxes</span>
+          <span class="font-sans text-sm text-white font-medium">$620,000 / year (est.)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab: Amenities -->
+    <div id="tab-amenities" class="tab-panel reveal">
+      <h3 class="font-serif text-2xl text-white mb-8" style="font-weight:400;">Amenities &amp; <em>Services</em></h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="amenity"><span class="text-xl">🏊</span><div><p class="font-sans text-sm text-white">Heated Infinity Pool</p><p class="font-sans text-xs text-slate-500">Terrace Level · 40 ft</p></div></div>
+        <div class="amenity"><span class="text-xl">🛁</span><div><p class="font-sans text-sm text-white">Private Spa Suite</p><p class="font-sans text-xs text-slate-500">Sauna · Steam · Massage</p></div></div>
+        <div class="amenity"><span class="text-xl">🚁</span><div><p class="font-sans text-sm text-white">Private Helipad</p><p class="font-sans text-xs text-slate-500">Roof Level · FAA Approved</p></div></div>
+        <div class="amenity"><span class="text-xl">🎭</span><div><p class="font-sans text-sm text-white">Private Cinema</p><p class="font-sans text-xs text-slate-500">12 Seats · Dolby Atmos</p></div></div>
+        <div class="amenity"><span class="text-xl">🍷</span><div><p class="font-sans text-sm text-white">Wine Cellar</p><p class="font-sans text-xs text-slate-500">2,400 bottle capacity</p></div></div>
+        <div class="amenity"><span class="text-xl">🏋️</span><div><p class="font-sans text-sm text-white">Fitness Studio</p><p class="font-sans text-xs text-slate-500">Full Technogym Suite</p></div></div>
+        <div class="amenity"><span class="text-xl">🚗</span><div><p class="font-sans text-sm text-white">Valet Parking</p><p class="font-sans text-xs text-slate-500">4 dedicated spaces</p></div></div>
+        <div class="amenity"><span class="text-xl">🌿</span><div><p class="font-sans text-sm text-white">Wraparound Terrace</p><p class="font-sans text-xs text-slate-500">3,200 sq ft · Landscaped</p></div></div>
+        <div class="amenity"><span class="text-xl">👨‍🍳</span><div><p class="font-sans text-sm text-white">Catering Kitchen</p><p class="font-sans text-xs text-slate-500">Full commercial grade</p></div></div>
+        <div class="amenity"><span class="text-xl">🔒</span><div><p class="font-sans text-sm text-white">24/7 Security</p><p class="font-sans text-xs text-slate-500">Dedicated concierge floor</p></div></div>
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ── STICKY SIDEBAR ── -->
+  <aside id="sidebar" class="w-full lg:w-80 xl:w-96 flex-shrink-0">
+    <div class="glass rounded-sm p-8">
+      <!-- Price -->
+      <div class="text-center mb-8 pb-8" style="border-bottom:1px solid rgba(255,255,255,.07);">
+        <p class="font-sans text-xs text-slate-500 tracking-widest uppercase mb-2" style="letter-spacing:.2em;">Asking Price</p>
+        <p class="font-serif text-4xl text-white" style="font-weight:400;">$48.<span class="text-gold">5M</span></p>
+        <p class="font-sans text-xs text-slate-600 mt-1">Exclusive Representation · Off-Market Available</p>
+      </div>
+
+      <!-- Key Stats Row -->
+      <div class="grid grid-cols-3 gap-4 mb-8 text-center">
+        <div>
+          <p class="font-serif text-2xl text-white">5</p>
+          <p class="font-sans text-xs text-slate-500">Bedrooms</p>
+        </div>
+        <div>
+          <p class="font-serif text-2xl text-white">12.4k</p>
+          <p class="font-sans text-xs text-slate-500">Sq Ft</p>
+        </div>
+        <div>
+          <p class="font-serif text-2xl text-white">3</p>
+          <p class="font-sans text-xs text-slate-500">Floors</p>
+        </div>
+      </div>
+
+      <!-- Viewing Form -->
+      <h3 class="font-serif text-xl text-white mb-5" style="font-weight:400;">Request Private Viewing</h3>
+
+      <div class="space-y-4">
+        <div>
+          <label>Full Name</label>
+          <input type="text" class="form-input" placeholder="Your name" />
+        </div>
+        <div>
+          <label>Email Address</label>
+          <input type="email" class="form-input" placeholder="your@email.com" />
+        </div>
+        <div>
+          <label>Phone</label>
+          <input type="tel" class="form-input" placeholder="+1 (555) 000-0000" />
+        </div>
+        <div>
+          <label>Preferred Date</label>
+          <input type="date" class="form-input" />
+        </div>
+        <div>
+          <label>Message (Optional)</label>
+          <textarea class="form-input" rows="3" placeholder="Any specific requirements..."></textarea>
+        </div>
+      </div>
+
+      <button onclick="handleViewing()" class="btn-gold w-full py-4 rounded-sm mt-6 flex items-center justify-center gap-2">
+        Schedule Private Viewing
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </button>
+
+      <p class="font-sans text-xs text-slate-600 text-center mt-4">
+        🔒 All inquiries handled with absolute discretion.
+      </p>
+
+      <!-- Agent -->
+      <div class="mt-8 pt-6 flex items-center gap-4" style="border-top:1px solid rgba(255,255,255,.07);">
+        <div style="width:44px; height:44px; border-radius:50%; overflow:hidden; border:2px solid rgba(201,168,76,.4); flex-shrink:0;">
+          <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&q=80" alt="Agent" class="w-full h-full object-cover" />
+        </div>
+        <div>
+          <p class="font-sans text-sm text-white font-medium">James Whitfield</p>
+          <p class="font-sans text-xs text-slate-500">Senior Estate Advisor</p>
+          <a href="tel:+12125550199" class="font-sans text-xs text-gold hover:text-gold-lt">+1 (212) 555-0199</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Similar Properties -->
+    <div class="mt-6 glass rounded-sm p-6">
+      <p class="font-sans text-xs tracking-widest uppercase text-slate-500 mb-4" style="letter-spacing:.2em;">Similar Properties</p>
+      <a href="details.html" class="flex gap-4 items-center mb-4 hover:opacity-80 transition-opacity">
+        <img src="https://images.unsplash.com/photo-1613977257363-707ba9348227?w=100&q=80" class="w-16 h-12 object-cover rounded-sm flex-shrink-0" alt="Palm" />
+        <div>
+          <p class="font-sans text-sm text-white">Palm Horizon Villa</p>
+          <p class="font-sans text-xs text-gold">$72.0M · Dubai</p>
+        </div>
+      </a>
+      <a href="details.html" class="flex gap-4 items-center hover:opacity-80 transition-opacity">
+        <img src="https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?w=100&q=80" class="w-16 h-12 object-cover rounded-sm flex-shrink-0" alt="Sage" />
+        <div>
+          <p class="font-sans text-sm text-white">Sage Ridge Estate</p>
+          <p class="font-sans text-xs text-gold">$34.2M · Beverly Hills</p>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer style="border-top:1px solid rgba(201,168,76,.15); background:var(--surface);" class="py-12 px-8 md:px-20 mt-8">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+    <a href="index.html" class="flex items-center gap-3">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+        <polygon points="16,2 30,28 2,28" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+      </svg>
+      <span class="font-serif text-base tracking-widest text-white" style="letter-spacing:.22em;">AURA ESTATES</span>
+    </a>
+    <p class="font-sans text-xs text-slate-600">© 2024 Aura Estates. All rights reserved.</p>
+    <a href="contact.html" class="btn-gold px-6 py-2.5 rounded-sm text-xs">Partner with Us →</a>
+  </div>
+</footer>
+
+
+<script>
+  /* ── Navbar scroll ── */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  /* ── Reveal ── */
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  revealEls.forEach(el => observer.observe(el));
+
+  /* ── Tab switching ── */
+  function switchTab(name) {
+    // Hide all panels
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => {
+      b.classList.remove('active');
+      b.style.color = '#64748b';
+      b.style.borderBottomColor = 'transparent';
+    });
+
+    // Show selected
+    document.getElementById('tab-' + name).classList.add('active');
+
+    // Update button styles
+    event.target.style.color = 'var(--gold)';
+    event.target.style.borderBottom = '2px solid var(--gold)';
+  }
+
+  /* ── Viewing form submit ── */
+  function handleViewing() {
+    const btn = event.target;
+    btn.textContent = '✓ Request Sent — We\'ll be in touch';
+    btn.style.background = 'rgba(201,168,76,.2)';
+    btn.style.color = 'var(--gold)';
+    btn.style.border = '1px solid rgba(201,168,76,.4)';
+    btn.disabled = true;
+  }
+</script>
+</body>
+</html>

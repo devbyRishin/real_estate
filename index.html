@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aura Estates — Redefining Architectural Excellence</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Playfair Display + DM Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Spline 3D Web Component -->
+  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.76/build/spline-viewer.js"></script>
+
+  <style>
+    /* ── Design Tokens ── */
+    :root {
+      --gold:     #C9A84C;
+      --gold-lt:  #E2C77A;
+      --bg:       #09090b;       /* zinc-950 */
+      --surface:  #111113;
+      --text:     #cbd5e1;       /* slate-300 */
+      --text-dim: #64748b;
+      --serif:    'Playfair Display', Georgia, serif;
+      --sans:     'DM Sans', sans-serif;
+    }
+
+    /* ── Base Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      overflow-x: hidden;
+    }
+
+    /* ── Grain Overlay ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: .5;
+    }
+
+    /* ── Typography ── */
+    .font-serif { font-family: var(--serif); }
+    .font-sans  { font-family: var(--sans); }
+
+    /* ── Gold Accent ── */
+    .text-gold      { color: var(--gold); }
+    .border-gold    { border-color: var(--gold); }
+    .bg-gold        { background: var(--gold); }
+
+    /* ── Glassmorphism ── */
+    .glass {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* ── Nav ── */
+    #navbar {
+      transition: background .4s, box-shadow .4s;
+    }
+    #navbar.scrolled {
+      background: rgba(9,9,11,0.88);
+      box-shadow: 0 1px 0 rgba(201,168,76,0.18);
+      backdrop-filter: blur(20px);
+    }
+
+    /* ── Hero ── */
+    #hero { position: relative; height: 100vh; width: 100%; overflow: hidden; }
+    #hero spline-viewer {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      opacity: .85;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom,
+        rgba(9,9,11,.35) 0%,
+        rgba(9,9,11,.15) 40%,
+        rgba(9,9,11,.75) 80%,
+        rgba(9,9,11,1)   100%);
+    }
+    .hero-content {
+      position: absolute; bottom: 12%; left: 8%;
+      max-width: 680px;
+    }
+
+    /* ── Gold rule ── */
+    .gold-line {
+      display: inline-block;
+      width: 56px; height: 1px;
+      background: var(--gold);
+      vertical-align: middle;
+      margin-right: 14px;
+    }
+
+    /* ── Stat Cards ── */
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::after {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 2px; height: 100%;
+      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+    }
+
+    /* ── Feature Cards ── */
+    .feature-card {
+      transition: transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s;
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 48px rgba(0,0,0,.5), 0 0 0 1px rgba(201,168,76,.2);
+    }
+
+    /* ── Property Preview Cards ── */
+    .prop-card .prop-img {
+      overflow: hidden;
+    }
+    .prop-card .prop-img img {
+      transition: transform .7s cubic-bezier(.22,1,.36,1);
+    }
+    .prop-card:hover .prop-img img { transform: scale(1.08); }
+
+    /* ── CTA Button ── */
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 100%);
+      color: #09090b;
+      font-family: var(--sans);
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: .78rem;
+      transition: opacity .3s, transform .3s;
+    }
+    .btn-gold:hover { opacity: .88; transform: translateY(-1px); }
+
+    .btn-outline {
+      border: 1px solid rgba(201,168,76,.55);
+      color: var(--gold);
+      font-family: var(--sans);
+      font-weight: 500;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      font-size: .78rem;
+      transition: background .3s, color .3s;
+    }
+    .btn-outline:hover {
+      background: rgba(201,168,76,.1);
+    }
+
+    /* ── Marquee ── */
+    @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    .marquee-track { animation: marquee 28s linear infinite; }
+
+    /* ── Fade-in on scroll ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1);
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ── Mobile menu ── */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     NAVIGATION
+════════════════════════════════════════════ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-between transition-all duration-400">
+  <!-- Logo -->
+  <a href="index.html" class="flex items-center gap-3">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <polygon points="16,2 30,28 2,28" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+      <polygon points="16,8 26,26 6,26" fill="rgba(201,168,76,0.12)"/>
+    </svg>
+    <span class="font-serif text-xl tracking-widest text-white" style="letter-spacing:.22em;">AURA</span>
+    <span class="text-gold font-sans text-xs tracking-widest uppercase" style="letter-spacing:.3em;">ESTATES</span>
+  </a>
+
+  <!-- Desktop Links -->
+  <ul class="hidden md:flex gap-10 items-center font-sans text-sm tracking-widest uppercase" style="letter-spacing:.15em;">
+    <li><a href="index.html"       class="text-gold border-b border-gold pb-0.5">Home</a></li>
+    <li><a href="properties.html"  class="text-slate-400 hover:text-white transition-colors">Properties</a></li>
+    <li><a href="details.html"     class="text-slate-400 hover:text-white transition-colors">Virtual Tour</a></li>
+    <li><a href="contact.html"     class="text-slate-400 hover:text-white transition-colors">Contact</a></li>
+  </ul>
+
+  <!-- CTA -->
+  <a href="contact.html" class="hidden md:inline-flex btn-gold px-6 py-2.5 rounded-sm items-center gap-2">
+    Private Consultation
+  </a>
+
+  <!-- Mobile Hamburger -->
+  <button id="menu-btn" class="md:hidden text-slate-300" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/>
+    </svg>
+  </button>
+</nav>
+
+<!-- Mobile Menu -->
+<div id="mobile-menu" class="fixed top-16 left-0 right-0 z-40 glass px-8 py-6 flex flex-col gap-5 font-sans text-sm tracking-widest uppercase" style="letter-spacing:.15em;">
+  <a href="index.html"      class="text-gold">Home</a>
+  <a href="properties.html" class="text-slate-300 hover:text-white">Properties</a>
+  <a href="details.html"    class="text-slate-300 hover:text-white">Virtual Tour</a>
+  <a href="contact.html"    class="text-slate-300 hover:text-white">Contact</a>
+  <a href="contact.html"    class="btn-gold px-5 py-2.5 rounded-sm text-center">Private Consultation</a>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     HERO — 3D ARCHITECTURAL SCENE
+════════════════════════════════════════════ -->
+<section id="hero">
+  <!-- Spline 3D Scene -->
+  <spline-viewer url="https://prod.spline.design/6Wq1Q7YGyWfS3Umc/scene.splinecode" loading-anim-type="spinner-small-dark"></spline-viewer>
+
+  <!-- Gradient Overlay -->
+  <div class="hero-overlay"></div>
+
+  <!-- Hero Copy -->
+  <div class="hero-content">
+    <p class="font-sans text-xs tracking-widest uppercase mb-5" style="color:var(--gold); letter-spacing:.3em;">
+      <span class="gold-line"></span>Est. 2004 · New York · Dubai
+    </p>
+    <h1 class="font-serif text-6xl md:text-7xl leading-none text-white mb-6" style="font-weight:400;">
+      Redefining<br/>
+      <em style="color:var(--gold);">Architectural</em><br/>
+      Excellence.
+    </h1>
+    <p class="font-sans text-base text-slate-400 leading-relaxed mb-10 max-w-md">
+      Where visionary design meets uncompromising craftsmanship. Aura Estates curates the world's most extraordinary residences for those who define the standard.
+    </p>
+    <div class="flex flex-wrap gap-4">
+      <a href="properties.html" class="btn-gold px-8 py-3.5 rounded-sm inline-flex items-center gap-2">
+        Explore Portfolio
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+      <a href="details.html" class="btn-outline px-8 py-3.5 rounded-sm inline-flex items-center gap-2">
+        Virtual Tour
+      </a>
+    </div>
+  </div>
+
+  <!-- Scroll Indicator -->
+  <div class="absolute bottom-8 right-8 flex flex-col items-center gap-2 opacity-50">
+    <span class="font-sans text-xs tracking-widest uppercase" style="letter-spacing:.25em; color:var(--gold); writing-mode:vertical-rl;">Scroll</span>
+    <div style="width:1px; height:48px; background:linear-gradient(to bottom, var(--gold), transparent);"></div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     MARQUEE TICKER
+════════════════════════════════════════════ -->
+<div style="border-top:1px solid rgba(201,168,76,.2); border-bottom:1px solid rgba(201,168,76,.2); background:rgba(201,168,76,.04); overflow:hidden; padding:14px 0;">
+  <div class="marquee-track flex gap-16 whitespace-nowrap">
+    <!-- Track is duplicated for seamless loop -->
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">Architectural Mastery</span>
+    <span class="text-gold">✦</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">Private Residences</span>
+    <span class="text-gold">✦</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">Award-Winning Design</span>
+    <span class="text-gold">✦</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">Global Portfolio</span>
+    <span class="text-gold">✦</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">Bespoke Luxury</span>
+    <span class="text-gold">✦</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">White-Glove Service</span>
+    <span class="text-gold">✦</span>
+    <!-- Duplicate -->
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">Architectural Mastery</span>
+    <span class="text-gold">✦</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">Private Residences</span>
+    <span class="text-gold">✦</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">Award-Winning Design</span>
+    <span class="text-gold">✦</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">Global Portfolio</span>
+    <span class="text-gold">✦</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">Bespoke Luxury</span>
+    <span class="text-gold">✦</span>
+    <span class="font-sans text-xs tracking-widest uppercase text-slate-500" style="letter-spacing:.22em;">White-Glove Service</span>
+    <span class="text-gold">✦</span>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     STATS — FLOATING GLASS CARDS
+════════════════════════════════════════════ -->
+<section class="py-28 px-8 md:px-20 max-w-7xl mx-auto">
+  <div class="text-center mb-20 reveal">
+    <p class="font-sans text-xs tracking-widest uppercase mb-4" style="color:var(--gold); letter-spacing:.3em;">
+      <span class="gold-line"></span>Our Legacy
+    </p>
+    <h2 class="font-serif text-5xl text-white" style="font-weight:400;">Numbers That <em>Define</em> Excellence</h2>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+    <!-- Card 1 -->
+    <div class="stat-card glass rounded-sm p-8 reveal" style="transition-delay:.1s;">
+      <p class="font-serif text-5xl text-white mb-2" style="font-weight:400;">$2.4<span class="text-gold">B+</span></p>
+      <p class="font-sans text-sm text-slate-400 tracking-wide">Assets Under Management</p>
+      <p class="font-sans text-xs text-slate-600 mt-3">Across 6 global markets</p>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="stat-card glass rounded-sm p-8 reveal" style="transition-delay:.2s;">
+      <p class="font-serif text-5xl text-white mb-2" style="font-weight:400;">140<span class="text-gold">+</span></p>
+      <p class="font-sans text-sm text-slate-400 tracking-wide">Awarded Projects</p>
+      <p class="font-sans text-xs text-slate-600 mt-3">International architecture awards</p>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="stat-card glass rounded-sm p-8 reveal" style="transition-delay:.3s;">
+      <p class="font-serif text-5xl text-white mb-2" style="font-weight:400;">98<span class="text-gold">%</span></p>
+      <p class="font-sans text-sm text-slate-400 tracking-wide">Client Satisfaction</p>
+      <p class="font-sans text-xs text-slate-600 mt-3">Based on post-acquisition surveys</p>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="stat-card glass rounded-sm p-8 reveal" style="transition-delay:.4s;">
+      <p class="font-serif text-5xl text-white mb-2" style="font-weight:400;">20<span class="text-gold">yr</span></p>
+      <p class="font-sans text-sm text-slate-400 tracking-wide">Industry Leadership</p>
+      <p class="font-sans text-xs text-slate-600 mt-3">Est. 2004, New York</p>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     FEATURED PROPERTIES PREVIEW
+════════════════════════════════════════════ -->
+<section class="py-20 px-8 md:px-20 max-w-7xl mx-auto">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-16 gap-6 reveal">
+    <div>
+      <p class="font-sans text-xs tracking-widest uppercase mb-4" style="color:var(--gold); letter-spacing:.3em;">
+        <span class="gold-line"></span>Featured Residences
+      </p>
+      <h2 class="font-serif text-5xl text-white" style="font-weight:400;">Curated for the <em>Extraordinary</em></h2>
+    </div>
+    <a href="properties.html" class="btn-outline px-7 py-3 rounded-sm self-start md:self-auto">View All 48 Properties</a>
+  </div>
+
+  <!-- 3-col preview grid -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Property 1 -->
+    <div class="prop-card feature-card glass rounded-sm overflow-hidden reveal" style="transition-delay:.1s;">
+      <div class="prop-img h-60">
+        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=700&q=80" alt="Obsidian Penthouse" class="w-full h-full object-cover" />
+      </div>
+      <div class="p-6">
+        <p class="font-sans text-xs tracking-widest uppercase mb-2" style="color:var(--gold); letter-spacing:.2em;">Manhattan, New York</p>
+        <h3 class="font-serif text-2xl text-white mb-1" style="font-weight:400;">Obsidian Penthouse</h3>
+        <p class="font-sans text-sm text-slate-500 mb-4">12,400 sq ft · 5 BD · Helipad</p>
+        <div class="flex items-center justify-between">
+          <span class="font-serif text-xl text-gold">$48.5M</span>
+          <a href="details.html" class="btn-outline px-4 py-2 rounded-sm text-xs">View Details</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property 2 -->
+    <div class="prop-card feature-card glass rounded-sm overflow-hidden reveal" style="transition-delay:.2s;">
+      <div class="prop-img h-60">
+        <img src="https://images.unsplash.com/photo-1613977257363-707ba9348227?w=700&q=80" alt="Palm Horizon Villa" class="w-full h-full object-cover" />
+      </div>
+      <div class="p-6">
+        <p class="font-sans text-xs tracking-widest uppercase mb-2" style="color:var(--gold); letter-spacing:.2em;">Palm Jumeirah, Dubai</p>
+        <h3 class="font-serif text-2xl text-white mb-1" style="font-weight:400;">Palm Horizon Villa</h3>
+        <p class="font-sans text-sm text-slate-500 mb-4">18,200 sq ft · 7 BD · Infinity Pool</p>
+        <div class="flex items-center justify-between">
+          <span class="font-serif text-xl text-gold">$72.0M</span>
+          <a href="details.html" class="btn-outline px-4 py-2 rounded-sm text-xs">View Details</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Property 3 -->
+    <div class="prop-card feature-card glass rounded-sm overflow-hidden reveal" style="transition-delay:.3s;">
+      <div class="prop-img h-60">
+        <img src="https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?w=700&q=80" alt="Sage Ridge Estate" class="w-full h-full object-cover" />
+      </div>
+      <div class="p-6">
+        <p class="font-sans text-xs tracking-widest uppercase mb-2" style="color:var(--gold); letter-spacing:.2em;">Beverly Hills, California</p>
+        <h3 class="font-serif text-2xl text-white mb-1" style="font-weight:400;">Sage Ridge Estate</h3>
+        <p class="font-sans text-sm text-slate-500 mb-4">9,800 sq ft · 6 BD · Wine Cellar</p>
+        <div class="flex items-center justify-between">
+          <span class="font-serif text-xl text-gold">$34.2M</span>
+          <a href="details.html" class="btn-outline px-4 py-2 rounded-sm text-xs">View Details</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     WHY AURA — FEATURE GRID
+════════════════════════════════════════════ -->
+<section style="background: var(--surface);" class="py-28 px-8 md:px-20">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-20 reveal">
+      <p class="font-sans text-xs tracking-widest uppercase mb-4" style="color:var(--gold); letter-spacing:.3em;">
+        <span class="gold-line"></span>The Aura Difference
+      </p>
+      <h2 class="font-serif text-5xl text-white" style="font-weight:400;">Crafted for <em>Connoisseurs</em></h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+      <div class="feature-card glass rounded-sm p-10 text-center reveal" style="transition-delay:.1s;">
+        <div class="w-14 h-14 mx-auto mb-6 flex items-center justify-center rounded-sm" style="background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.25);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21V12h6v9"/></svg>
+        </div>
+        <h3 class="font-serif text-2xl text-white mb-3" style="font-weight:400;">Architectural Curation</h3>
+        <p class="font-sans text-sm text-slate-500 leading-relaxed">Every residence in our portfolio is hand-selected against 240-point criteria for design integrity and investment longevity.</p>
+      </div>
+
+      <div class="feature-card glass rounded-sm p-10 text-center reveal" style="transition-delay:.2s;">
+        <div class="w-14 h-14 mx-auto mb-6 flex items-center justify-center rounded-sm" style="background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.25);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <h3 class="font-serif text-2xl text-white mb-3" style="font-weight:400;">24/7 Concierge</h3>
+        <p class="font-sans text-sm text-slate-500 leading-relaxed">Your dedicated estate advisor is available around the clock — from acquisition strategy to post-purchase lifestyle management.</p>
+      </div>
+
+      <div class="feature-card glass rounded-sm p-10 text-center reveal" style="transition-delay:.3s;">
+        <div class="w-14 h-14 mx-auto mb-6 flex items-center justify-center rounded-sm" style="background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.25);">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M12 2l2.5 7H22l-6.5 4.5 2.5 7L12 17l-6 3.5 2.5-7L2 9h7.5z"/></svg>
+        </div>
+        <h3 class="font-serif text-2xl text-white mb-3" style="font-weight:400;">Global Network</h3>
+        <p class="font-sans text-sm text-slate-500 leading-relaxed">Tap into an exclusive off-market network spanning 26 countries and over 3,400 vetted ultra-high-net-worth buyers.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     CTA BANNER
+════════════════════════════════════════════ -->
+<section class="py-32 px-8 text-center reveal" style="background: linear-gradient(135deg, rgba(201,168,76,.08) 0%, transparent 60%);">
+  <p class="font-sans text-xs tracking-widest uppercase mb-5" style="color:var(--gold); letter-spacing:.3em;">
+    Begin Your Journey
+  </p>
+  <h2 class="font-serif text-5xl md:text-6xl text-white mb-8 max-w-3xl mx-auto" style="font-weight:400; line-height:1.15;">
+    Your <em>Signature</em> Residence Awaits.
+  </h2>
+  <p class="font-sans text-slate-400 text-base max-w-xl mx-auto mb-12">
+    Schedule a private consultation with an Aura advisor. Complimentary. Confidential. Curated exclusively for you.
+  </p>
+  <a href="contact.html" class="btn-gold px-12 py-4 rounded-sm inline-flex items-center gap-3 text-sm">
+    Request Private Consultation
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+  </a>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer style="border-top:1px solid rgba(201,168,76,.15); background:var(--surface);" class="py-16 px-8 md:px-20">
+  <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+
+    <!-- Brand -->
+    <div class="md:col-span-2">
+      <a href="index.html" class="flex items-center gap-3 mb-4">
+        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+          <polygon points="16,2 30,28 2,28" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+        </svg>
+        <span class="font-serif text-lg tracking-widest text-white" style="letter-spacing:.22em;">AURA ESTATES</span>
+      </a>
+      <p class="font-sans text-sm text-slate-500 leading-relaxed max-w-xs">
+        The world's most discerning real estate firm. Curating architectural masterpieces since 2004.
+      </p>
+      <div class="flex gap-4 mt-6">
+        <a href="#" class="w-9 h-9 glass rounded-sm flex items-center justify-center hover:border-gold transition-colors">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="text-slate-400"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-8.384 4.482A13.944 13.944 0 0 1 1.64 3.161a4.916 4.916 0 0 0 1.523 6.558 4.9 4.9 0 0 1-2.229-.616v.062a4.917 4.917 0 0 0 3.946 4.827 4.936 4.936 0 0 1-2.224.084 4.918 4.918 0 0 0 4.593 3.41A9.867 9.867 0 0 1 0 19.54a13.94 13.94 0 0 0 7.548 2.212c9.057 0 14.01-7.503 14.01-14.01 0-.213-.005-.426-.015-.637A10.012 10.012 0 0 0 24 4.557z"/></svg>
+        </a>
+        <a href="#" class="w-9 h-9 glass rounded-sm flex items-center justify-center hover:border-gold transition-colors">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="text-slate-400"><path d="M20.447 20.452H17.01v-5.569c0-1.327-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.587V9h3.3v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.914 1.914 0 1 1 0-3.828 1.914 1.914 0 0 1 0 3.828zm1.654 13.019H3.683V9h3.308v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        </a>
+        <a href="#" class="w-9 h-9 glass rounded-sm flex items-center justify-center hover:border-gold transition-colors">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" class="text-slate-400"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div>
+      <p class="font-sans text-xs tracking-widest uppercase mb-5 text-gold" style="letter-spacing:.25em;">Navigation</p>
+      <ul class="space-y-3 font-sans text-sm text-slate-500">
+        <li><a href="index.html" class="hover:text-white transition-colors">Home</a></li>
+        <li><a href="properties.html" class="hover:text-white transition-colors">Properties</a></li>
+        <li><a href="details.html" class="hover:text-white transition-colors">Virtual Tour</a></li>
+        <li><a href="contact.html" class="hover:text-white transition-colors">Contact</a></li>
+      </ul>
+    </div>
+
+    <!-- HQ -->
+    <div>
+      <p class="font-sans text-xs tracking-widest uppercase mb-5 text-gold" style="letter-spacing:.25em;">Headquarters</p>
+      <p class="font-sans text-sm text-slate-500 leading-relaxed mb-4">
+        432 Park Avenue, 82nd Floor<br/>New York, NY 10022
+      </p>
+      <p class="font-sans text-sm text-slate-500 leading-relaxed">
+        The Address, Downtown Dubai<br/>Dubai, UAE
+      </p>
+    </div>
+
+  </div>
+
+  <div style="border-top:1px solid rgba(255,255,255,.06);" class="pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+    <p class="font-sans text-xs text-slate-600">© 2024 Aura Estates. All rights reserved. A subsidiary of Aura Capital Group.</p>
+    <a href="contact.html" class="btn-gold px-6 py-2.5 rounded-sm text-xs">Partner with Us →</a>
+  </div>
+</footer>
+
+
+<!-- ════════════════════════════════════════════
+     SCRIPTS
+════════════════════════════════════════════ -->
+<script>
+  /* ── Navbar scroll effect ── */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  /* ── Intersection Observer: reveal on scroll ── */
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  revealEls.forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>

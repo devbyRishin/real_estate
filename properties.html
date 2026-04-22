@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Properties — Aura Estates</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --gold:     #C9A84C;
+      --gold-lt:  #E2C77A;
+      --bg:       #09090b;
+      --surface:  #111113;
+      --text:     #cbd5e1;
+      --text-dim: #64748b;
+      --serif:    'Playfair Display', Georgia, serif;
+      --sans:     'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); overflow-x: hidden; }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: .5;
+    }
+
+    .font-serif { font-family: var(--serif); }
+    .text-gold { color: var(--gold); }
+    .bg-gold { background: var(--gold); }
+
+    .glass {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    #navbar { transition: background .4s, box-shadow .4s; }
+    #navbar.scrolled {
+      background: rgba(9,9,11,0.88);
+      box-shadow: 0 1px 0 rgba(201,168,76,.18);
+      backdrop-filter: blur(20px);
+    }
+
+    .gold-line { display: inline-block; width: 56px; height: 1px; background: var(--gold); vertical-align: middle; margin-right: 14px; }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 100%);
+      color: #09090b; font-family: var(--sans); font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase; font-size: .78rem;
+      transition: opacity .3s, transform .3s;
+    }
+    .btn-gold:hover { opacity: .88; transform: translateY(-1px); }
+
+    .btn-outline {
+      border: 1px solid rgba(201,168,76,.55); color: var(--gold);
+      font-family: var(--sans); font-weight: 500;
+      letter-spacing: .08em; text-transform: uppercase; font-size: .78rem;
+      transition: background .3s, color .3s;
+    }
+    .btn-outline:hover { background: rgba(201,168,76,.1); }
+
+    /* ── Hero Banner ── */
+    .page-hero {
+      position: relative;
+      min-height: 44vh;
+      display: flex; align-items: flex-end;
+      overflow: hidden;
+    }
+    .page-hero-bg {
+      position: absolute; inset: 0;
+      background: url('https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=1600&q=80') center/cover no-repeat;
+      filter: brightness(.3);
+    }
+    .page-hero-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(to right, rgba(9,9,11,.9) 30%, transparent 100%);
+    }
+
+    /* ── Filter Bar ── */
+    .filter-bar select, .filter-bar input {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: .8rem;
+      appearance: none;
+      padding: 10px 16px;
+      border-radius: 2px;
+      outline: none;
+      transition: border-color .3s;
+    }
+    .filter-bar select:focus, .filter-bar input:focus {
+      border-color: var(--gold);
+    }
+    .filter-bar select option { background: #18181b; }
+
+    /* ── Property Cards ── */
+    .prop-card {
+      transition: transform .4s cubic-bezier(.22,1,.36,1), box-shadow .4s;
+    }
+    .prop-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 28px 56px rgba(0,0,0,.55), 0 0 0 1px rgba(201,168,76,.2);
+    }
+    .prop-card .prop-img { overflow: hidden; }
+    .prop-card .prop-img img { transition: transform .7s cubic-bezier(.22,1,.36,1); }
+    .prop-card:hover .prop-img img { transform: scale(1.1); }
+
+    /* ── Badge ── */
+    .badge-new {
+      background: rgba(201,168,76,.18);
+      border: 1px solid rgba(201,168,76,.4);
+      color: var(--gold);
+      font-size: .65rem; font-family: var(--sans);
+      letter-spacing: .15em; text-transform: uppercase;
+      padding: 3px 10px;
+    }
+    .badge-sold {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.15);
+      color: #94a3b8;
+      font-size: .65rem; font-family: var(--sans);
+      letter-spacing: .15em; text-transform: uppercase;
+      padding: 3px 10px;
+    }
+
+    /* ── Reveal ── */
+    .reveal { opacity:0; transform:translateY(28px); transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1); }
+    .reveal.visible { opacity:1; transform:none; }
+
+    #mobile-menu { display:none; }
+    #mobile-menu.open { display:block; }
+
+    /* ── Active filter button ── */
+    .filter-btn { transition: background .2s, color .2s, border-color .2s; }
+    .filter-btn.active {
+      background: rgba(201,168,76,.15) !important;
+      border-color: var(--gold) !important;
+      color: var(--gold) !important;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     NAVIGATION
+════════════════════════════════════════════ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-between">
+  <a href="index.html" class="flex items-center gap-3">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <polygon points="16,2 30,28 2,28" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+      <polygon points="16,8 26,26 6,26" fill="rgba(201,168,76,0.12)"/>
+    </svg>
+    <span class="font-serif text-xl tracking-widest text-white" style="letter-spacing:.22em;">AURA</span>
+    <span class="text-gold font-sans text-xs tracking-widest uppercase" style="letter-spacing:.3em; font-family:var(--sans);">ESTATES</span>
+  </a>
+
+  <ul class="hidden md:flex gap-10 items-center font-sans text-sm tracking-widest uppercase" style="letter-spacing:.15em; font-family:var(--sans);">
+    <li><a href="index.html"      class="text-slate-400 hover:text-white transition-colors">Home</a></li>
+    <li><a href="properties.html" class="text-gold border-b border-gold pb-0.5">Properties</a></li>
+    <li><a href="details.html"    class="text-slate-400 hover:text-white transition-colors">Virtual Tour</a></li>
+    <li><a href="contact.html"    class="text-slate-400 hover:text-white transition-colors">Contact</a></li>
+  </ul>
+
+  <a href="contact.html" class="hidden md:inline-flex btn-gold px-6 py-2.5 rounded-sm items-center gap-2">
+    Private Consultation
+  </a>
+
+  <button id="menu-btn" class="md:hidden text-slate-300" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/>
+    </svg>
+  </button>
+</nav>
+
+<div id="mobile-menu" class="fixed top-16 left-0 right-0 z-40 glass px-8 py-6 flex flex-col gap-5 font-sans text-sm tracking-widest uppercase" style="letter-spacing:.15em;">
+  <a href="index.html"      class="text-slate-300">Home</a>
+  <a href="properties.html" class="text-gold">Properties</a>
+  <a href="details.html"    class="text-slate-300">Virtual Tour</a>
+  <a href="contact.html"    class="text-slate-300">Contact</a>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     PAGE HERO BANNER
+════════════════════════════════════════════ -->
+<div class="page-hero pt-24">
+  <div class="page-hero-bg"></div>
+  <div class="page-hero-gradient"></div>
+  <div class="relative z-10 px-8 md:px-20 pb-14 max-w-7xl mx-auto w-full">
+    <p class="font-sans text-xs tracking-widest uppercase mb-3" style="color:var(--gold); letter-spacing:.3em; font-family:var(--sans);">
+      <span class="gold-line"></span>Portfolio
+    </p>
+    <h1 class="font-serif text-5xl md:text-6xl text-white" style="font-weight:400;">Our <em style="color:var(--gold);">Residences</em></h1>
+    <p class="font-sans text-slate-400 text-base mt-3 max-w-lg" style="font-family:var(--sans);">48 extraordinary properties across 12 of the world's most coveted addresses.</p>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     FILTER BAR
+════════════════════════════════════════════ -->
+<div style="background:var(--surface); border-bottom:1px solid rgba(201,168,76,.12);" class="sticky top-16 z-30 py-5 px-8 md:px-20">
+  <div class="max-w-7xl mx-auto filter-bar flex flex-wrap gap-4 items-center">
+
+    <!-- Location -->
+    <div class="flex items-center gap-2">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+      <select id="filter-location">
+        <option value="">All Locations</option>
+        <option value="new-york">New York</option>
+        <option value="dubai">Dubai</option>
+        <option value="beverly-hills">Beverly Hills</option>
+        <option value="london">London</option>
+        <option value="monaco">Monaco</option>
+      </select>
+    </div>
+
+    <!-- Divider -->
+    <div style="width:1px; height:24px; background:rgba(255,255,255,.08);"></div>
+
+    <!-- Price Range -->
+    <div class="flex items-center gap-2">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v6"/></svg>
+      <select id="filter-price">
+        <option value="">All Price Ranges</option>
+        <option value="10-30">$10M – $30M</option>
+        <option value="30-60">$30M – $60M</option>
+        <option value="60-100">$60M – $100M</option>
+        <option value="100+">$100M+</option>
+      </select>
+    </div>
+
+    <!-- Divider -->
+    <div style="width:1px; height:24px; background:rgba(255,255,255,.08);"></div>
+
+    <!-- Property Type -->
+    <div class="flex items-center gap-2">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M3 21V9l9-6 9 6v12"/><path d="M9 21V12h6v9"/></svg>
+      <select id="filter-type">
+        <option value="">All Types</option>
+        <option value="penthouse">Penthouse</option>
+        <option value="villa">Villa</option>
+        <option value="estate">Estate</option>
+        <option value="mansion">Mansion</option>
+        <option value="chalet">Chalet</option>
+      </select>
+    </div>
+
+    <!-- Divider -->
+    <div style="width:1px; height:24px; background:rgba(255,255,255,.08);"></div>
+
+    <!-- Type quick-filter buttons -->
+    <div class="flex gap-2 flex-wrap">
+      <button class="filter-btn btn-outline px-4 py-1.5 rounded-sm text-xs active" onclick="setActive(this, 'type-group')">All</button>
+      <button class="filter-btn btn-outline px-4 py-1.5 rounded-sm text-xs" onclick="setActive(this, 'type-group')">Penthouse</button>
+      <button class="filter-btn btn-outline px-4 py-1.5 rounded-sm text-xs" onclick="setActive(this, 'type-group')">Villa</button>
+      <button class="filter-btn btn-outline px-4 py-1.5 rounded-sm text-xs" onclick="setActive(this, 'type-group')">Estate</button>
+    </div>
+
+    <!-- Result count -->
+    <div class="ml-auto font-sans text-xs text-slate-500" style="font-family:var(--sans);">Showing <span id="count" class="text-gold">6</span> of 48 properties</div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     PROPERTY GRID — 6 Cards
+════════════════════════════════════════════ -->
+<main class="py-16 px-8 md:px-20 max-w-7xl mx-auto">
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="property-grid">
+
+    <!-- ── Card 1 ── -->
+    <article class="prop-card glass rounded-sm overflow-hidden reveal" style="transition-delay:.05s;">
+      <div class="prop-img h-64 relative">
+        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=700&q=80" alt="Obsidian Penthouse" class="w-full h-full object-cover" />
+        <span class="badge-new absolute top-4 left-4 rounded-sm">New Listing</span>
+        <span class="absolute top-4 right-4 font-serif text-xl text-white" style="text-shadow:0 2px 8px rgba(0,0,0,.8);">$48.5M</span>
+      </div>
+      <div class="p-7">
+        <div class="flex items-center gap-2 mb-2">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+          <span class="font-sans text-xs text-gold tracking-widest uppercase" style="letter-spacing:.2em; font-family:var(--sans);">Manhattan, New York</span>
+        </div>
+        <h2 class="font-serif text-2xl text-white mb-1" style="font-weight:400;">Obsidian Penthouse</h2>
+        <p class="font-sans text-sm text-slate-500 mb-5" style="font-family:var(--sans);">12,400 sq ft · 5 Bed · 6 Bath · Helipad</p>
+        <div class="flex gap-3 items-center justify-between pt-4" style="border-top:1px solid rgba(255,255,255,.06);">
+          <div class="flex gap-4 text-xs text-slate-500 font-sans" style="font-family:var(--sans);">
+            <span>🏊 Pool</span><span>🛁 Spa</span><span>🚁 Helipad</span>
+          </div>
+          <a href="details.html" class="btn-gold px-5 py-2 rounded-sm whitespace-nowrap">View Details</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── Card 2 ── -->
+    <article class="prop-card glass rounded-sm overflow-hidden reveal" style="transition-delay:.1s;">
+      <div class="prop-img h-64 relative">
+        <img src="https://images.unsplash.com/photo-1613977257363-707ba9348227?w=700&q=80" alt="Palm Horizon Villa" class="w-full h-full object-cover" />
+        <span class="badge-new absolute top-4 left-4 rounded-sm">Featured</span>
+        <span class="absolute top-4 right-4 font-serif text-xl text-white" style="text-shadow:0 2px 8px rgba(0,0,0,.8);">$72.0M</span>
+      </div>
+      <div class="p-7">
+        <div class="flex items-center gap-2 mb-2">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+          <span class="font-sans text-xs text-gold tracking-widest uppercase" style="letter-spacing:.2em; font-family:var(--sans);">Palm Jumeirah, Dubai</span>
+        </div>
+        <h2 class="font-serif text-2xl text-white mb-1" style="font-weight:400;">Palm Horizon Villa</h2>
+        <p class="font-sans text-sm text-slate-500 mb-5" style="font-family:var(--sans);">18,200 sq ft · 7 Bed · 9 Bath · Infinity Pool</p>
+        <div class="flex gap-3 items-center justify-between pt-4" style="border-top:1px solid rgba(255,255,255,.06);">
+          <div class="flex gap-4 text-xs text-slate-500 font-sans" style="font-family:var(--sans);">
+            <span>🏊 Pool</span><span>🎭 Cinema</span><span>⛵ Dock</span>
+          </div>
+          <a href="details.html" class="btn-gold px-5 py-2 rounded-sm whitespace-nowrap">View Details</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── Card 3 ── -->
+    <article class="prop-card glass rounded-sm overflow-hidden reveal" style="transition-delay:.15s;">
+      <div class="prop-img h-64 relative">
+        <img src="https://images.unsplash.com/photo-1560185007-c5ca9d2c014d?w=700&q=80" alt="Sage Ridge Estate" class="w-full h-full object-cover" />
+        <span class="badge-new absolute top-4 left-4 rounded-sm">Exclusive</span>
+        <span class="absolute top-4 right-4 font-serif text-xl text-white" style="text-shadow:0 2px 8px rgba(0,0,0,.8);">$34.2M</span>
+      </div>
+      <div class="p-7">
+        <div class="flex items-center gap-2 mb-2">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+          <span class="font-sans text-xs text-gold tracking-widest uppercase" style="letter-spacing:.2em; font-family:var(--sans);">Beverly Hills, California</span>
+        </div>
+        <h2 class="font-serif text-2xl text-white mb-1" style="font-weight:400;">Sage Ridge Estate</h2>
+        <p class="font-sans text-sm text-slate-500 mb-5" style="font-family:var(--sans);">9,800 sq ft · 6 Bed · 8 Bath · Wine Cellar</p>
+        <div class="flex gap-3 items-center justify-between pt-4" style="border-top:1px solid rgba(255,255,255,.06);">
+          <div class="flex gap-4 text-xs text-slate-500 font-sans" style="font-family:var(--sans);">
+            <span>🏊 Pool</span><span>🍷 Cellar</span><span>🎾 Court</span>
+          </div>
+          <a href="details.html" class="btn-gold px-5 py-2 rounded-sm whitespace-nowrap">View Details</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── Card 4 ── -->
+    <article class="prop-card glass rounded-sm overflow-hidden reveal" style="transition-delay:.2s;">
+      <div class="prop-img h-64 relative">
+        <img src="https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?w=700&q=80" alt="Riviera Cliff Mansion" class="w-full h-full object-cover" />
+        <span class="badge-sold absolute top-4 left-4 rounded-sm">Under Offer</span>
+        <span class="absolute top-4 right-4 font-serif text-xl text-white" style="text-shadow:0 2px 8px rgba(0,0,0,.8);">€91.5M</span>
+      </div>
+      <div class="p-7">
+        <div class="flex items-center gap-2 mb-2">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+          <span class="font-sans text-xs text-gold tracking-widest uppercase" style="letter-spacing:.2em; font-family:var(--sans);">Cap Ferrat, Monaco</span>
+        </div>
+        <h2 class="font-serif text-2xl text-white mb-1" style="font-weight:400;">Riviera Cliff Mansion</h2>
+        <p class="font-sans text-sm text-slate-500 mb-5" style="font-family:var(--sans);">22,100 sq ft · 9 Bed · 11 Bath · Private Beach</p>
+        <div class="flex gap-3 items-center justify-between pt-4" style="border-top:1px solid rgba(255,255,255,.06);">
+          <div class="flex gap-4 text-xs text-slate-500 font-sans" style="font-family:var(--sans);">
+            <span>🏖️ Beach</span><span>🛥️ Yacht</span><span>🌿 Garden</span>
+          </div>
+          <a href="details.html" class="btn-outline px-5 py-2 rounded-sm whitespace-nowrap">View Details</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── Card 5 ── -->
+    <article class="prop-card glass rounded-sm overflow-hidden reveal" style="transition-delay:.25s;">
+      <div class="prop-img h-64 relative">
+        <img src="https://images.unsplash.com/photo-1582407947304-fd86f28f0eec?w=700&q=80" alt="Kensington Palace Flat" class="w-full h-full object-cover" />
+        <span class="badge-new absolute top-4 left-4 rounded-sm">New Listing</span>
+        <span class="absolute top-4 right-4 font-serif text-xl text-white" style="text-shadow:0 2px 8px rgba(0,0,0,.8);">£28.8M</span>
+      </div>
+      <div class="p-7">
+        <div class="flex items-center gap-2 mb-2">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+          <span class="font-sans text-xs text-gold tracking-widest uppercase" style="letter-spacing:.2em; font-family:var(--sans);">Kensington, London</span>
+        </div>
+        <h2 class="font-serif text-2xl text-white mb-1" style="font-weight:400;">Kensington Palace Flat</h2>
+        <p class="font-sans text-sm text-slate-500 mb-5" style="font-family:var(--sans);">5,600 sq ft · 4 Bed · 5 Bath · Rooftop Terrace</p>
+        <div class="flex gap-3 items-center justify-between pt-4" style="border-top:1px solid rgba(255,255,255,.06);">
+          <div class="flex gap-4 text-xs text-slate-500 font-sans" style="font-family:var(--sans);">
+            <span>🌿 Terrace</span><span>🎖️ Concierge</span><span>🚗 Garage</span>
+          </div>
+          <a href="details.html" class="btn-gold px-5 py-2 rounded-sm whitespace-nowrap">View Details</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- ── Card 6 ── -->
+    <article class="prop-card glass rounded-sm overflow-hidden reveal" style="transition-delay:.3s;">
+      <div class="prop-img h-64 relative">
+        <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=700&q=80" alt="Alpine Sky Chalet" class="w-full h-full object-cover" />
+        <span class="badge-new absolute top-4 left-4 rounded-sm">Exclusive</span>
+        <span class="absolute top-4 right-4 font-serif text-xl text-white" style="text-shadow:0 2px 8px rgba(0,0,0,.8);">CHF 55M</span>
+      </div>
+      <div class="p-7">
+        <div class="flex items-center gap-2 mb-2">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+          <span class="font-sans text-xs text-gold tracking-widest uppercase" style="letter-spacing:.2em; font-family:var(--sans);">Gstaad, Switzerland</span>
+        </div>
+        <h2 class="font-serif text-2xl text-white mb-1" style="font-weight:400;">Alpine Sky Chalet</h2>
+        <p class="font-sans text-sm text-slate-500 mb-5" style="font-family:var(--sans);">14,000 sq ft · 8 Bed · 10 Bath · Ski-in/Ski-out</p>
+        <div class="flex gap-3 items-center justify-between pt-4" style="border-top:1px solid rgba(255,255,255,.06);">
+          <div class="flex gap-4 text-xs text-slate-500 font-sans" style="font-family:var(--sans);">
+            <span>⛷️ Ski</span><span>🛁 Spa</span><span>🔥 Lodge</span>
+          </div>
+          <a href="details.html" class="btn-gold px-5 py-2 rounded-sm whitespace-nowrap">View Details</a>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  <!-- Load More -->
+  <div class="text-center mt-16 reveal">
+    <button class="btn-outline px-12 py-4 rounded-sm font-sans text-sm">
+      Load 6 More Properties
+    </button>
+    <p class="font-sans text-xs text-slate-600 mt-4" style="font-family:var(--sans);">Showing 6 of 48 available listings. Contact us for off-market opportunities.</p>
+  </div>
+</main>
+
+
+<!-- ════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer style="border-top:1px solid rgba(201,168,76,.15); background:var(--surface);" class="py-12 px-8 md:px-20">
+  <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+    <a href="index.html" class="flex items-center gap-3">
+      <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+        <polygon points="16,2 30,28 2,28" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+      </svg>
+      <span class="font-serif text-base tracking-widest text-white" style="letter-spacing:.22em;">AURA ESTATES</span>
+    </a>
+    <p class="font-sans text-xs text-slate-600" style="font-family:var(--sans);">© 2024 Aura Estates. All rights reserved.</p>
+    <a href="contact.html" class="btn-gold px-6 py-2.5 rounded-sm text-xs">Partner with Us →</a>
+  </div>
+</footer>
+
+
+<script>
+  /* ── Navbar scroll ── */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  /* ── Reveal on scroll ── */
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  revealEls.forEach(el => observer.observe(el));
+
+  /* ── Filter button group toggle ── */
+  function setActive(btn, group) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+</script>
+</body>
+</html>

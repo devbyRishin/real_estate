@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Contact — Aura Estates</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script type="module" src="https://unpkg.com/@splinetool/viewer@1.0.76/build/spline-viewer.js"></script>
+
+  <style>
+    :root {
+      --gold:    #C9A84C;
+      --gold-lt: #E2C77A;
+      --bg:      #09090b;
+      --surface: #111113;
+      --text:    #cbd5e1;
+      --serif:   'Playfair Display', Georgia, serif;
+      --sans:    'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); overflow-x: hidden; min-height: 100vh; }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 9999; opacity: .5;
+    }
+
+    .font-serif { font-family: var(--serif); }
+    .text-gold  { color: var(--gold); }
+
+    .glass {
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    #navbar { transition: background .4s; }
+    #navbar.scrolled {
+      background: rgba(9,9,11,0.9);
+      box-shadow: 0 1px 0 rgba(201,168,76,.18);
+      backdrop-filter: blur(20px);
+    }
+
+    .gold-line { display: inline-block; width: 56px; height: 1px; background: var(--gold); vertical-align: middle; margin-right: 14px; }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-lt) 100%);
+      color: #09090b; font-family: var(--sans); font-weight: 600;
+      letter-spacing: .08em; text-transform: uppercase; font-size: .78rem;
+      transition: opacity .3s, transform .3s; cursor: pointer; border: none;
+    }
+    .btn-gold:hover { opacity: .88; transform: translateY(-1px); }
+    .btn-gold:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .btn-outline {
+      border: 1px solid rgba(201,168,76,.55); color: var(--gold);
+      font-family: var(--sans); font-weight: 500;
+      letter-spacing: .08em; text-transform: uppercase; font-size: .78rem;
+      transition: background .3s;
+    }
+    .btn-outline:hover { background: rgba(201,168,76,.1); }
+
+    /* ── Split Layout ── */
+    .split-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 88px);
+    }
+    @media (max-width: 1023px) {
+      .split-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ── Left Panel ── */
+    .left-panel {
+      position: relative;
+      overflow: hidden;
+    }
+    .left-panel spline-viewer {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+    }
+    .left-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(9,9,11,.85) 0%, rgba(9,9,11,.5) 60%, rgba(9,9,11,.3) 100%);
+      pointer-events: none;
+    }
+    .left-content {
+      position: relative; z-index: 2;
+      padding: 64px 56px;
+      display: flex; flex-direction: column; justify-content: center;
+      min-height: 100%;
+    }
+
+    /* ── Form Inputs ── */
+    .form-input {
+      width: 100%;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.1);
+      color: var(--text);
+      font-family: var(--sans); font-size: .88rem;
+      padding: 14px 18px;
+      border-radius: 2px; outline: none;
+      transition: border-color .3s, background .3s;
+    }
+    .form-input:focus { border-color: var(--gold); background: rgba(201,168,76,.04); }
+    .form-input::placeholder { color: #475569; }
+    .form-label {
+      font-family: var(--sans); font-size: .7rem;
+      letter-spacing: .18em; text-transform: uppercase;
+      color: #64748b; display: block; margin-bottom: 7px;
+    }
+
+    /* ── Step Indicator ── */
+    .step-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,.15);
+      transition: background .3s, transform .3s;
+    }
+    .step-dot.active { background: var(--gold); transform: scale(1.3); }
+    .step-dot.done { background: rgba(201,168,76,.5); }
+
+    /* ── Step Panels ── */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; animation: fadeInUp .4s ease; }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+
+    /* ── Interest Options ── */
+    .interest-opt {
+      border: 1px solid rgba(255,255,255,.1);
+      padding: 14px 18px; border-radius: 2px; cursor: pointer;
+      transition: border-color .3s, background .3s;
+      font-family: var(--sans); font-size: .85rem;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .interest-opt.selected {
+      border-color: var(--gold);
+      background: rgba(201,168,76,.08);
+      color: white;
+    }
+    .interest-opt input[type="checkbox"] { accent-color: var(--gold); }
+
+    /* ── Contact Info Cards ── */
+    .info-card {
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.03);
+      padding: 20px 22px; border-radius: 2px;
+      transition: border-color .3s;
+    }
+    .info-card:hover { border-color: rgba(201,168,76,.3); }
+
+    /* ── Social Links ── */
+    .social-link {
+      width: 40px; height: 40px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 2px; display: flex; align-items: center; justify-content: center;
+      transition: border-color .3s, background .3s; color: #64748b;
+    }
+    .social-link:hover { border-color: var(--gold); background: rgba(201,168,76,.08); color: var(--gold); }
+
+    /* ── Partner CTA ── */
+    .partner-cta {
+      background: linear-gradient(135deg, rgba(201,168,76,.12) 0%, rgba(201,168,76,.04) 100%);
+      border: 1px solid rgba(201,168,76,.2);
+    }
+
+    /* ── Reveal ── */
+    .reveal { opacity:0; transform:translateY(24px); transition: opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1); }
+    .reveal.visible { opacity:1; transform:none; }
+
+    #mobile-menu { display:none; }
+    #mobile-menu.open { display:block; }
+
+    /* ── Select ── */
+    select.form-input { appearance:none; }
+    select.form-input option { background:#18181b; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     NAVIGATION
+════════════════════════════════════════════ -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 px-8 py-5 flex items-center justify-between" style="background:rgba(9,9,11,.8); backdrop-filter:blur(20px);">
+  <a href="index.html" class="flex items-center gap-3">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+      <polygon points="16,2 30,28 2,28" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+      <polygon points="16,8 26,26 6,26" fill="rgba(201,168,76,0.12)"/>
+    </svg>
+    <span class="font-serif text-xl tracking-widest text-white" style="letter-spacing:.22em;">AURA</span>
+    <span class="text-gold font-sans text-xs tracking-widest uppercase" style="letter-spacing:.3em;">ESTATES</span>
+  </a>
+
+  <ul class="hidden md:flex gap-10 items-center font-sans text-sm tracking-widest uppercase" style="letter-spacing:.15em;">
+    <li><a href="index.html"      class="text-slate-400 hover:text-white transition-colors">Home</a></li>
+    <li><a href="properties.html" class="text-slate-400 hover:text-white transition-colors">Properties</a></li>
+    <li><a href="details.html"    class="text-slate-400 hover:text-white transition-colors">Virtual Tour</a></li>
+    <li><a href="contact.html"    class="text-gold border-b border-gold pb-0.5">Contact</a></li>
+  </ul>
+
+  <a href="contact.html" class="hidden md:inline-flex btn-gold px-6 py-2.5 rounded-sm items-center gap-2">
+    Private Consultation
+  </a>
+
+  <button class="md:hidden text-slate-300" onclick="document.getElementById('mobile-menu').classList.toggle('open')">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/>
+    </svg>
+  </button>
+</nav>
+
+<div id="mobile-menu" class="fixed top-16 left-0 right-0 z-40 glass px-8 py-6 flex flex-col gap-5 font-sans text-sm tracking-widest uppercase" style="letter-spacing:.15em;">
+  <a href="index.html"      class="text-slate-300">Home</a>
+  <a href="properties.html" class="text-slate-300">Properties</a>
+  <a href="details.html"    class="text-slate-300">Virtual Tour</a>
+  <a href="contact.html"    class="text-gold">Contact</a>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     SPLIT SCREEN HERO
+════════════════════════════════════════════ -->
+<div class="pt-20">
+  <div class="split-layout">
+
+    <!-- ── LEFT: 3D Scene + Brand Info ── -->
+    <div class="left-panel" style="min-height:600px;">
+      <spline-viewer url="https://prod.spline.design/6Wq1Q7YGyWfS3Umc/scene.splinecode"></spline-viewer>
+      <div class="left-overlay"></div>
+
+      <div class="left-content">
+        <p class="font-sans text-xs tracking-widest uppercase mb-5" style="color:var(--gold); letter-spacing:.3em; font-family:var(--sans);">
+          <span class="gold-line"></span>Let's Connect
+        </p>
+        <h1 class="font-serif text-5xl text-white mb-6" style="font-weight:400; line-height:1.15;">
+          Begin Your<br/>
+          <em style="color:var(--gold);">Extraordinary</em><br/>
+          Journey.
+        </h1>
+        <p class="font-sans text-slate-400 text-sm leading-relaxed mb-10 max-w-xs" style="font-family:var(--sans);">
+          Every great acquisition starts with a conversation. Our advisors are ready to guide you — quietly, exclusively, and with absolute discretion.
+        </p>
+
+        <!-- Trust Badges -->
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <div style="width:6px; height:6px; border-radius:50%; background:var(--gold); flex-shrink:0;"></div>
+            <span class="font-sans text-sm text-slate-400">All inquiries handled with complete confidentiality</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div style="width:6px; height:6px; border-radius:50%; background:var(--gold); flex-shrink:0;"></div>
+            <span class="font-sans text-sm text-slate-400">Response within 2 business hours, guaranteed</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div style="width:6px; height:6px; border-radius:50%; background:var(--gold); flex-shrink:0;"></div>
+            <span class="font-sans text-sm text-slate-400">Access to 40+ exclusive off-market listings</span>
+          </div>
+        </div>
+
+        <!-- Social Row -->
+        <div class="flex gap-3 mt-10">
+          <a href="#" class="social-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-8.384 4.482A13.944 13.944 0 0 1 1.64 3.161a4.916 4.916 0 0 0 1.523 6.558 4.9 4.9 0 0 1-2.229-.616v.062a4.917 4.917 0 0 0 3.946 4.827 4.936 4.936 0 0 1-2.224.084 4.918 4.918 0 0 0 4.593 3.41A9.867 9.867 0 0 1 0 19.54a13.94 13.94 0 0 0 7.548 2.212c9.057 0 14.01-7.503 14.01-14.01 0-.213-.005-.426-.015-.637A10.012 10.012 0 0 0 24 4.557z"/></svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452H17.01v-5.569c0-1.327-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.587V9h3.3v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.914 1.914 0 1 1 0-3.828 1.914 1.914 0 0 1 0 3.828zm1.654 13.019H3.683V9h3.308v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.77 1.52V6.73a4.85 4.85 0 0 1-1-.04z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RIGHT: Multi-Step Form ── -->
+    <div class="flex flex-col justify-center px-10 lg:px-16 py-16" style="background:var(--surface);">
+
+      <!-- Step Indicator -->
+      <div class="flex items-center gap-3 mb-10">
+        <div class="step-dot active" id="dot-1"></div>
+        <div style="flex:1; height:1px; background:rgba(255,255,255,.1);"></div>
+        <div class="step-dot" id="dot-2"></div>
+        <div style="flex:1; height:1px; background:rgba(255,255,255,.1);"></div>
+        <div class="step-dot" id="dot-3"></div>
+        <span class="font-sans text-xs text-slate-600 ml-2" id="step-label">Step 1 of 3</span>
+      </div>
+
+      <!-- ── STEP 1: Personal Info ── -->
+      <div class="step-panel active" id="step-1">
+        <p class="font-sans text-xs tracking-widest uppercase mb-3 text-gold" style="letter-spacing:.25em;">Personal Details</p>
+        <h2 class="font-serif text-3xl text-white mb-8" style="font-weight:400;">Who are we<br/>speaking with?</h2>
+
+        <div class="space-y-5">
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="form-label">First Name</label>
+              <input type="text" id="firstName" class="form-input" placeholder="James" />
+            </div>
+            <div>
+              <label class="form-label">Last Name</label>
+              <input type="text" id="lastName" class="form-input" placeholder="Whitfield" />
+            </div>
+          </div>
+          <div>
+            <label class="form-label">Email Address</label>
+            <input type="email" id="email" class="form-input" placeholder="james@example.com" />
+          </div>
+          <div>
+            <label class="form-label">Phone Number</label>
+            <input type="tel" id="phone" class="form-input" placeholder="+1 (212) 555-0199" />
+          </div>
+          <div>
+            <label class="form-label">Nationality / Country of Residence</label>
+            <select class="form-input" id="country">
+              <option value="">Select Country</option>
+              <option>United States</option>
+              <option>United Kingdom</option>
+              <option>United Arab Emirates</option>
+              <option>Switzerland</option>
+              <option>Monaco</option>
+              <option>Singapore</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="goToStep(2)" class="btn-gold w-full py-4 rounded-sm mt-8 flex items-center justify-center gap-2">
+          Continue — Investment Profile
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+        </button>
+      </div>
+
+      <!-- ── STEP 2: Investment Profile ── -->
+      <div class="step-panel" id="step-2">
+        <p class="font-sans text-xs tracking-widest uppercase mb-3 text-gold" style="letter-spacing:.25em;">Investment Profile</p>
+        <h2 class="font-serif text-3xl text-white mb-8" style="font-weight:400;">Your acquisition<br/>preferences.</h2>
+
+        <div class="space-y-5">
+          <div>
+            <label class="form-label">Investment Budget</label>
+            <select class="form-input" id="budget">
+              <option value="">Select Range</option>
+              <option>$10M – $30M</option>
+              <option>$30M – $60M</option>
+              <option>$60M – $100M</option>
+              <option>$100M – $250M</option>
+              <option>$250M+</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label mb-3 block">Property Interests (select all that apply)</label>
+            <div class="space-y-2">
+              <label class="interest-opt" id="opt-penthouse">
+                <input type="checkbox" onchange="toggleOpt('opt-penthouse')" />
+                🏙️ &nbsp;Penthouse / Sky Residence
+              </label>
+              <label class="interest-opt" id="opt-villa">
+                <input type="checkbox" onchange="toggleOpt('opt-villa')" />
+                🌴 &nbsp;Beachfront or Waterfront Villa
+              </label>
+              <label class="interest-opt" id="opt-estate">
+                <input type="checkbox" onchange="toggleOpt('opt-estate')" />
+                🏡 &nbsp;Private Country Estate
+              </label>
+              <label class="interest-opt" id="opt-alpine">
+                <input type="checkbox" onchange="toggleOpt('opt-alpine')" />
+                ⛰️ &nbsp;Alpine Chalet / Mountain Retreat
+              </label>
+              <label class="interest-opt" id="opt-portfolio">
+                <input type="checkbox" onchange="toggleOpt('opt-portfolio')" />
+                📊 &nbsp;Investment Portfolio / Multiple Assets
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label">Preferred Markets</label>
+            <input type="text" class="form-input" placeholder="New York, Dubai, London..." />
+          </div>
+        </div>
+
+        <div class="flex gap-4 mt-8">
+          <button onclick="goToStep(1)" class="btn-outline flex-1 py-4 rounded-sm">← Back</button>
+          <button onclick="goToStep(3)" class="btn-gold flex-1 py-4 rounded-sm flex items-center justify-center gap-2">
+            Final Step
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── STEP 3: Message + Confirm ── -->
+      <div class="step-panel" id="step-3">
+        <p class="font-sans text-xs tracking-widest uppercase mb-3 text-gold" style="letter-spacing:.25em;">Your Message</p>
+        <h2 class="font-serif text-3xl text-white mb-8" style="font-weight:400;">Anything specific<br/>we should know?</h2>
+
+        <div class="space-y-5">
+          <div>
+            <label class="form-label">How did you hear about Aura Estates?</label>
+            <select class="form-input">
+              <option value="">Select Source</option>
+              <option>Private Referral</option>
+              <option>Press / Media Coverage</option>
+              <option>Social Media</option>
+              <option>Art Basel / TEFAF</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Timeline for Acquisition</label>
+            <select class="form-input">
+              <option>Immediately (within 3 months)</option>
+              <option>3–6 months</option>
+              <option>6–12 months</option>
+              <option>Exploratory — no fixed timeline</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Personal Message to Your Advisor</label>
+            <textarea class="form-input" rows="4" placeholder="Share any specific requirements, discretion needs, or questions about our portfolio..."></textarea>
+          </div>
+          <div class="flex items-start gap-3">
+            <input type="checkbox" id="nda" style="accent-color:var(--gold); margin-top:2px;" />
+            <label for="nda" class="font-sans text-xs text-slate-500 leading-relaxed" style="text-transform:none; letter-spacing:0; margin:0;">
+              I understand that by submitting this form, Aura Estates will treat my enquiry under NDA-equivalent confidentiality protocols. I consent to being contacted by my assigned advisor.
+            </label>
+          </div>
+        </div>
+
+        <div class="flex gap-4 mt-8">
+          <button onclick="goToStep(2)" class="btn-outline flex-1 py-4 rounded-sm">← Back</button>
+          <button onclick="submitForm()" id="submit-btn" class="btn-gold flex-1 py-4 rounded-sm flex items-center justify-center gap-2">
+            Send Inquiry
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- ── SUCCESS STATE ── -->
+      <div class="step-panel" id="step-success">
+        <div class="text-center py-8">
+          <div class="w-20 h-20 mx-auto mb-6 flex items-center justify-center rounded-full" style="background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.3);">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h2 class="font-serif text-3xl text-white mb-4" style="font-weight:400;">Inquiry Received</h2>
+          <p class="font-sans text-slate-400 text-sm leading-relaxed max-w-sm mx-auto mb-8">
+            Your dedicated Aura advisor will contact you within 2 business hours. All communications are handled with absolute discretion.
+          </p>
+          <div class="glass rounded-sm p-6 text-left mb-6">
+            <p class="font-sans text-xs text-slate-500 tracking-widest uppercase mb-3" style="letter-spacing:.18em;">Your Reference</p>
+            <p class="font-serif text-2xl text-gold" id="ref-code">AE-2024-7741</p>
+          </div>
+          <a href="properties.html" class="btn-outline px-8 py-3.5 rounded-sm inline-flex items-center gap-2">
+            Browse Properties While You Wait
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════
+     OFFICE INFO SECTION
+════════════════════════════════════════════ -->
+<section class="py-20 px-8 md:px-20" style="background:var(--surface); border-top:1px solid rgba(201,168,76,.1);">
+  <div class="max-w-7xl mx-auto">
+    <div class="text-center mb-14 reveal">
+      <p class="font-sans text-xs tracking-widest uppercase mb-4 text-gold" style="letter-spacing:.3em;">
+        <span class="gold-line"></span>Global Offices
+      </p>
+      <h2 class="font-serif text-4xl text-white" style="font-weight:400;">Where to Find <em>Aura</em></h2>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- NY Office -->
+      <div class="info-card rounded-sm reveal" style="transition-delay:.1s;">
+        <div class="flex items-center gap-3 mb-4">
+          <div style="width:36px; height:36px; background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.3); border-radius:2px; display:flex; align-items:center; justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M3 21V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v16"/><rect x="8" y="10" width="3" height="5"/><rect x="13" y="10" width="3" height="5"/></svg>
+          </div>
+          <div>
+            <p class="font-sans text-sm text-white font-medium">New York</p>
+            <p class="font-sans text-xs text-slate-500">Headquarters</p>
+          </div>
+        </div>
+        <p class="font-sans text-sm text-slate-400 leading-relaxed mb-3">
+          432 Park Avenue, 82nd Floor<br/>New York, NY 10022<br/>United States
+        </p>
+        <p class="font-sans text-xs text-gold">+1 (212) 555-0100</p>
+        <p class="font-sans text-xs text-slate-500">newyork@auraestates.com</p>
+      </div>
+
+      <!-- Dubai Office -->
+      <div class="info-card rounded-sm reveal" style="transition-delay:.2s;">
+        <div class="flex items-center gap-3 mb-4">
+          <div style="width:36px; height:36px; background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.3); border-radius:2px; display:flex; align-items:center; justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><path d="M3 21V9l9-6 9 6v12"/></svg>
+          </div>
+          <div>
+            <p class="font-sans text-sm text-white font-medium">Dubai</p>
+            <p class="font-sans text-xs text-slate-500">MENA Headquarters</p>
+          </div>
+        </div>
+        <p class="font-sans text-sm text-slate-400 leading-relaxed mb-3">
+          The Address Downtown, Level 54<br/>Sheikh Mohammed Bin Rashid Blvd<br/>Dubai, UAE
+        </p>
+        <p class="font-sans text-xs text-gold">+971 4 555 0200</p>
+        <p class="font-sans text-xs text-slate-500">dubai@auraestates.com</p>
+      </div>
+
+      <!-- London Office -->
+      <div class="info-card rounded-sm reveal" style="transition-delay:.3s;">
+        <div class="flex items-center gap-3 mb-4">
+          <div style="width:36px; height:36px; background:rgba(201,168,76,.1); border:1px solid rgba(201,168,76,.3); border-radius:2px; display:flex; align-items:center; justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l5 3"/></svg>
+          </div>
+          <div>
+            <p class="font-sans text-sm text-white font-medium">London</p>
+            <p class="font-sans text-xs text-slate-500">European Office</p>
+          </div>
+        </div>
+        <p class="font-sans text-sm text-slate-400 leading-relaxed mb-3">
+          1 Mayfair Place, Penthouse Suite<br/>London, W1J 8AJ<br/>United Kingdom
+        </p>
+        <p class="font-sans text-xs text-gold">+44 20 7555 0300</p>
+        <p class="font-sans text-xs text-slate-500">london@auraestates.com</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     PARTNER CTA BANNER
+════════════════════════════════════════════ -->
+<section class="py-20 px-8 md:px-20 reveal">
+  <div class="max-w-4xl mx-auto partner-cta rounded-sm p-12 md:p-16 text-center">
+    <p class="font-sans text-xs tracking-widest uppercase mb-5 text-gold" style="letter-spacing:.3em;">Institutional Partnerships</p>
+    <h2 class="font-serif text-4xl md:text-5xl text-white mb-6" style="font-weight:400;">
+      Partner with <em style="color:var(--gold);">Aura</em>
+    </h2>
+    <p class="font-sans text-slate-400 text-base leading-relaxed max-w-xl mx-auto mb-10">
+      Are you a family office, sovereign wealth fund, or private bank seeking exclusive real estate access? We offer institutional co-investment structures and white-label advisory services.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+      <a href="mailto:partners@auraestates.com" class="btn-gold px-10 py-4 rounded-sm inline-flex items-center justify-center gap-2">
+        Institutional Inquiry
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
+      </a>
+      <a href="properties.html" class="btn-outline px-10 py-4 rounded-sm inline-flex items-center justify-center gap-2">
+        View Portfolio
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════ -->
+<footer style="border-top:1px solid rgba(201,168,76,.15); background:var(--surface);" class="pt-16 pb-8 px-8 md:px-20">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Top row -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+      <div class="md:col-span-2">
+        <a href="index.html" class="flex items-center gap-3 mb-5">
+          <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+            <polygon points="16,2 30,28 2,28" stroke="#C9A84C" stroke-width="1.5" fill="none"/>
+          </svg>
+          <span class="font-serif text-lg tracking-widest text-white" style="letter-spacing:.22em;">AURA ESTATES</span>
+        </a>
+        <p class="font-sans text-sm text-slate-500 leading-relaxed max-w-xs mb-6">
+          The world's most discerning real estate firm. Curating architectural masterpieces since 2004.
+        </p>
+        <div class="flex gap-3">
+          <a href="#" class="social-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M24 4.557a9.83 9.83 0 0 1-2.828.775 4.932 4.932 0 0 0 2.165-2.724 9.864 9.864 0 0 1-3.127 1.195 4.916 4.916 0 0 0-8.384 4.482A13.944 13.944 0 0 1 1.64 3.161a4.916 4.916 0 0 0 1.523 6.558 4.9 4.9 0 0 1-2.229-.616v.062a4.917 4.917 0 0 0 3.946 4.827 4.936 4.936 0 0 1-2.224.084 4.918 4.918 0 0 0 4.593 3.41A9.867 9.867 0 0 1 0 19.54a13.94 13.94 0 0 0 7.548 2.212c9.057 0 14.01-7.503 14.01-14.01 0-.213-.005-.426-.015-.637A10.012 10.012 0 0 0 24 4.557z"/></svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+          </a>
+          <a href="#" class="social-link">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452H17.01v-5.569c0-1.327-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.587V9h3.3v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a1.914 1.914 0 1 1 0-3.828 1.914 1.914 0 0 1 0 3.828zm1.654 13.019H3.683V9h3.308v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <p class="font-sans text-xs tracking-widest uppercase mb-5 text-gold" style="letter-spacing:.25em;">Navigation</p>
+        <ul class="space-y-3 font-sans text-sm text-slate-500">
+          <li><a href="index.html" class="hover:text-white transition-colors">Home</a></li>
+          <li><a href="properties.html" class="hover:text-white transition-colors">Properties</a></li>
+          <li><a href="details.html" class="hover:text-white transition-colors">Virtual Tour</a></li>
+          <li><a href="contact.html" class="hover:text-white transition-colors">Contact</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">Press Room</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="font-sans text-xs tracking-widest uppercase mb-5 text-gold" style="letter-spacing:.25em;">Legal</p>
+        <ul class="space-y-3 font-sans text-sm text-slate-500">
+          <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">Cookie Policy</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">Disclaimer</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">NDA Framework</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom row -->
+    <div style="border-top:1px solid rgba(255,255,255,.06);" class="pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <p class="font-sans text-xs text-slate-600">
+        © 2024 Aura Estates LLC. A subsidiary of Aura Capital Group. Licensed Real Estate Broker · NY DRE #1234567 · UAE RERA #98765
+      </p>
+      <div class="flex gap-3 items-center">
+        <span class="font-sans text-xs text-slate-700">Regulated by</span>
+        <span class="font-sans text-xs text-slate-600 border border-slate-700 px-3 py-1 rounded-sm">RICS</span>
+        <span class="font-sans text-xs text-slate-600 border border-slate-700 px-3 py-1 rounded-sm">NAR</span>
+        <span class="font-sans text-xs text-slate-600 border border-slate-700 px-3 py-1 rounded-sm">RERA</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<script>
+  /* ── Navbar scroll ── */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  /* ── Reveal on scroll ── */
+  const revealEls = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  revealEls.forEach(el => observer.observe(el));
+
+  /* ── Multi-step form logic ── */
+  let currentStep = 1;
+
+  function goToStep(step) {
+    // Hide current
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    document.getElementById('dot-' + currentStep).classList.remove('active');
+    document.getElementById('dot-' + currentStep).classList.add('done');
+
+    // Show new
+    currentStep = step;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    document.getElementById('dot-' + currentStep).classList.add('active');
+    document.getElementById('dot-' + currentStep).classList.remove('done');
+
+    // Update label
+    document.getElementById('step-label').textContent = 'Step ' + currentStep + ' of 3';
+
+    // Scroll to top of form
+    document.querySelector('.split-layout').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ── Interest option toggle ── */
+  function toggleOpt(id) {
+    const el = document.getElementById(id);
+    const cb = el.querySelector('input[type="checkbox"]');
+    el.classList.toggle('selected', cb.checked);
+  }
+
+  /* ── Form submission ── */
+  function submitForm() {
+    const nda = document.getElementById('nda');
+    if (!nda.checked) {
+      nda.style.outline = '2px solid var(--gold)';
+      return;
+    }
+
+    // Generate reference
+    const ref = 'AE-2024-' + Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('ref-code').textContent = ref;
+
+    // Hide step 3
+    document.getElementById('step-3').classList.remove('active');
+    document.querySelectorAll('.step-dot').forEach(d => { d.classList.remove('active'); d.classList.add('done'); });
+
+    // Show success
+    document.getElementById('step-success').classList.add('active');
+    document.getElementById('step-label').textContent = 'Submitted ✓';
+  }
+</script>
+
+</body>
+</html>
